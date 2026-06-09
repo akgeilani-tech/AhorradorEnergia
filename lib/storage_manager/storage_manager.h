@@ -1,16 +1,20 @@
 #pragma once
 
+#include <Arduino.h>
 #include "settings.h"
 
-class StorageManager {
-
+class StorageManager
+{
 public:
 
-    void begin();
+    bool begin();
 
-    void save(Settings &s);
+    bool load();
 
-    void load(Settings &s);
+    bool save();
 
     void reset();
+
 };
+
+extern StorageManager storageManager;

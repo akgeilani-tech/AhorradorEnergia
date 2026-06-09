@@ -1,42 +1,24 @@
-#include <Arduino.h>
-#include <Wire.h>
-
-#include "config.h"
 #include "rtc_manager.h"
 
-void RTCManager::begin() {
+#include <Wire.h>
+#include <RTClib.h>
 
-    Wire.begin(SDA_PIN, SCL_PIN);
+#include "config.h"
 
-    Wire.begin();
+RTC_DS3231 rtc;
 
-    rtc.begin();
+RTCManager rtcManager;
 
-    if (rtc.lostPower()) {
-
-        Serial.println(
-            "RTC lost power"
-        );
-    }
-}
-
-String RTCManager::getTimeString() {
-
-    DateTime t = rtc.now();
-
-    char buffer[6];
-
-    sprintf(
-        buffer,
-        "%02d:%02d",
-        t.hour(),
-        t.minute()
+bool RTCManager::begin()
+{
+    Wire.begin(
+        SDA_PIN,
+        SCL_PIN
     );
 
-    return String(buffer);
+    return rtc.begin();
 }
 
-DateTime RTCManager::now() {
-
-    return rtc.now();
+void RTCManager::update()
+{
 }

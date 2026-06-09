@@ -1,12 +1,11 @@
 #pragma once
 
-class NTPManager {
-
+class NTPManager
+{
 public:
 
-    void begin();
-
     bool syncRTC();
-    
-    void update();
+
 };
+
+extern NTPManager ntpManager;

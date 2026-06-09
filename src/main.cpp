@@ -1,18 +1,36 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include "storage_manager.h"
+#include "rtc_manager.h"
+#include "wifi_manager.h"
+#include "web_server.h"
+#include "ntp_manager.h"
+#include "settings.h"
 
-void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+void setup()
+{
+    Serial.begin(115200);
+
+    storageManager.begin();
+    storageManager.load();
+
+    rtcManager.begin();
+
+    wifiManager.begin();
+
+    if (wifiManager.isConnected())
+    {
+        ntpManager.syncRTC();
+    }
+
+    webServerManager.begin();
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-}
+void loop()
+{
+    wifiManager.update();
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+    rtcManager.update();
+
+    delay(100);
 }

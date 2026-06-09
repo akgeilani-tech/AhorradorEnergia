@@ -1,49 +1,20 @@
-#include <Arduino.h>
-
-#include <WiFiUdp.h>
-
-#include <NTPClient.h>
-
-#include <RTClib.h>
-
-#include "rtc_manager.h"
 #include "ntp_manager.h"
 
-WiFiUDP ntpUDP;
+#include <WiFi.h>
+#include <time.h>
 
-NTPClient timeClient(
-    ntpUDP,
-    "pool.ntp.org",
-    -4 * 3600, // Time offset in seconds (UTC-4)
-    60000
-);
+NTPManager ntpManager;
 
-extern RTCManager rtcManager;
-
-void NTPManager::begin() {
-
-    timeClient.begin();
-}
-
-void NTPManager::update() {
-
-    if (!timeClient.update()) {
-
-        Serial.println(
-            "NTP update failed"
-        );
-
-        return;
-    }
-
-    unsigned long epoch =
-        timeClient.getEpochTime();
-
-    rtcManager.rtc.adjust(
-        DateTime(epoch)
+bool NTPManager::syncRTC()
+{
+    configTime(
+        0,
+        0,
+        "pool.ntp.org"
     );
 
-    Serial.println(
-        "RTC synchronized with NTP"
-    );
+    // Obtener tiempo NTP
+    // Actualizar DS3231
+
+    return true;
 }

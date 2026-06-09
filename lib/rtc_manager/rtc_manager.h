@@ -1,16 +1,13 @@
 #pragma once
 
-#include <RTClib.h>
-
-class RTCManager {
-
+class RTCManager
+{
 public:
 
-    RTC_DS3231 rtc;
+    bool begin();
 
-    void begin();
+    void update();
 
-    String getTimeString();
-
-    DateTime now();
 };
+
+extern RTCManager rtcManager;

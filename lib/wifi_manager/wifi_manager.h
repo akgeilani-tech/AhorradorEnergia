@@ -1,17 +1,23 @@
 #pragma once
 
-class WifiManager {
-
+class WifiManager
+{
 public:
+
+    void begin();
+
+    void update();
+
+    bool isConfigured();
 
     bool connect();
 
     void startAP();
 
-    bool isConfigured();
-
-    bool connected();
+    bool isConnected();
 
     bool hasInternet();
-    
+
 };
+
+extern WifiManager wifiManager;
