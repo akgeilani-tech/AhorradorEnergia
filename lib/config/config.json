@@ -1,0 +1,14 @@
+{
+    "magic":1,
+
+    "wifi":
+    {
+        "ssid":"",
+        "password":""
+    },
+
+    "system":
+    {
+        "hostname":"energy-saver"
+    }
+}
