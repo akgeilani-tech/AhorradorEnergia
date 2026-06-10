@@ -1,5 +1,7 @@
 {
-    "magic":1,
+    "magic": 1,
+
+    "version":1,
 
     "wifi":
     {
@@ -10,5 +12,17 @@
     "system":
     {
         "hostname":"energy-saver"
+    },
+
+    "heater":
+    {
+    },
+
+    "scheduler":
+    {
+    },
+
+    "energy":
+    {
     }
 }

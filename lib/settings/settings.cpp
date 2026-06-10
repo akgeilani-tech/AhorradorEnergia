@@ -2,6 +2,14 @@
 
 Settings settings =
 {
-    {},
-    {}
+    1,
+
+    {
+        "",
+        ""
+    },
+
+    {
+        "energy-saver"
+    }
 };

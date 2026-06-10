@@ -1,8 +1,5 @@
 #pragma once
 
-#include <Arduino.h>
-#include "settings.h"
-
 class StorageManager
 {
 public:
@@ -13,8 +10,11 @@ public:
 
     bool save();
 
+    bool createDefault();
+
     void reset();
 
+    void print();
 };
 
 extern StorageManager storageManager;

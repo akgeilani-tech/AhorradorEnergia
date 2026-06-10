@@ -9,5 +9,7 @@
 #define HOSTNAME "energy-saver"
 
 #define CONFIG_FILE "/config.json"
+#define SETTINGS_MAGIC 1
+#define SETTINGS_VERSION 1
 
 #define WIFI_CONNECT_TIMEOUT 30000

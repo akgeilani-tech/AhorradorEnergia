@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 struct WifiSettings
 {
@@ -13,7 +14,10 @@ struct SystemSettings
 
 struct Settings
 {
+    uint16_t version;
+
     WifiSettings wifi;
+
     SystemSettings system;
 };
 
