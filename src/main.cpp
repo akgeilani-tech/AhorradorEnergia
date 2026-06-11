@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFi.h>
 
 #include "storage_manager.h"
 #include "rtc_manager.h"
@@ -18,7 +19,12 @@ void setup()
 
     wifiManager.begin();
 
-    if (wifiManager.isConnected())
+    if
+    (
+        WiFi.status()
+        ==
+        WL_CONNECTED
+    )
     {
         ntpManager.syncRTC();
     }
@@ -34,3 +40,19 @@ void loop()
 
     delay(100);
 }
+
+// void setup()
+// {
+//     Serial.begin(115200);
+
+//     delay(3000);
+
+//     Serial.println("BOOT");
+// }
+
+// void loop()
+// {
+//     delay(1000);
+
+//     Serial.println("RUN");
+// }

@@ -11,9 +11,16 @@ WifiManager wifiManager;
 
 void WifiManager::begin()
 {
+    WiFi.persistent(false);
+
+    WiFi.setAutoReconnect(true);
+
     if (isConfigured())
     {
-        connect();
+        if (!connect())
+        {
+            startAP();
+        }
     }
     else
     {
@@ -32,6 +39,10 @@ bool WifiManager::isConfigured()
 
 bool WifiManager::connect()
 {
+    WiFi.disconnect(true, true);
+
+    delay(200);
+
     WiFi.mode(WIFI_STA);
 
     WiFi.begin(
@@ -39,11 +50,53 @@ bool WifiManager::connect()
         settings.wifi.password
     );
 
-    return true;
+    uint32_t start =
+        millis();
+
+    while
+    (
+        WiFi.status() != WL_CONNECTED
+        &&
+        millis() - start < 15000
+    )
+    {
+        delay(250);
+
+        Serial.print(".");
+    }
+
+    Serial.println();
+
+    if (
+        WiFi.status()
+        ==
+        WL_CONNECTED
+    )
+    {
+        Serial.println(
+            "WiFi connected"
+        );
+
+        Serial.println(
+            WiFi.localIP()
+        );
+
+        return true;
+    }
+
+    Serial.println(
+        "WiFi failed"
+    );
+
+    return false;
 }
 
 void WifiManager::startAP()
 {
+    WiFi.disconnect(true, true);
+
+    delay(500);
+
     WiFi.mode(WIFI_AP);
 
     WiFi.softAP(

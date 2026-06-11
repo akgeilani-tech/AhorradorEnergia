@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sistema IoT ESP32</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#edf1f5;
+    color:#222;
+}
+
+/*==========================
+    CONTENEDOR PRINCIPAL
+==========================*/
+
+.wrapper{
+    max-width:1100px;
+    margin:auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/*==========================
+          HEADER
+==========================*/
+
+header{
+    background:#1f3a5f;
+    color:white;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding:15px;
+    flex-wrap:wrap;
+}
+
+.logo{
+    width:70px;
+    height:70px;
+    background:#35557d;
+    border:2px solid white;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+.titulo{
+    flex:1;
+}
+
+.titulo h1{
+    font-size:30px;
+}
+
+.titulo p{
+    font-size:14px;
+    opacity:0.9;
+}
+
+/*==========================
+          TABS
+==========================*/
+
+input[type=radio]{
+    display:none;
+}
+
+.menu{
+    display:flex;
+    background:#d8dee6;
+    flex-wrap:wrap;
+}
+
+.menu label{
+
+    padding:14px 30px;
+    cursor:pointer;
+    background:#bcc8d5;
+    border-right:1px solid #999;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+.menu label:hover{
+    background:white;
+}
+
+#tabInicio:checked ~ .menu label[for=tabInicio],
+#tabProgramacion:checked ~ .menu label[for=tabProgramacion],
+#tabConfiguracion:checked ~ .menu label[for=tabConfiguracion]{
+
+    background:white;
+}
+
+/*==========================
+         CONTENIDO
+==========================*/
+
+.contenido{
+
+    background:white;
+    padding:20px;
+    flex:1;
+}
+
+.panel{
+    display:none;
+}
+
+#tabInicio:checked ~ .contenido .inicio{
+    display:block;
+}
+
+#tabProgramacion:checked ~ .contenido .programacion{
+    display:block;
+}
+
+#tabConfiguracion:checked ~ .contenido .configuracion{
+    display:block;
+}
+
+h2{
+    color:#1f3a5f;
+    margin-bottom:20px;
+}
+
+.card{
+
+    background:#f8f9fb;
+    border:1px solid #d0d6dc;
+    border-radius:8px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.card h3{
+    margin-bottom:15px;
+}
+
+/*==========================
+         FORMULARIOS
+==========================*/
+
+.campo{
+    margin-bottom:15px;
+}
+
+.campo label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+.campo input,
+.campo select{
+
+    width:100%;
+    padding:10px;
+    border:1px solid #bbb;
+    border-radius:5px;
+}
+
+.botones{
+
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+button{
+
+    background:#1f3a5f;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#35557d;
+}
+
+/*==========================
+          FOOTER
+==========================*/
+
+footer{
+
+    background:#1f3a5f;
+    color:white;
+    text-align:center;
+    padding:15px;
+    font-size:12px;
+}
+
+/*==========================
+       RESPONSIVE
+==========================*/
+
+@media(max-width:768px){
+
+    header{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .titulo{
+        flex:none;
+    }
+
+    .menu{
+        flex-direction:column;
+    }
+
+    .menu label{
+        border-right:none;
+        border-bottom:1px solid #999;
+        text-align:center;
+    }
+
+    .botones{
+        flex-direction:column;
+    }
+
+    button{
+        width:100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<input type="radio" name="tabs" id="tabInicio" checked>
+<input type="radio" name="tabs" id="tabProgramacion">
+<input type="radio" name="tabs" id="tabConfiguracion">
+
+<header>
+
+<div class="logo">
+LOGO
+</div>
+
+<div class="titulo">
+
+<h1>Sistema IoT ESP32</h1>
+
+<p>Panel de administración del dispositivo</p>
+
+</div>
+
+</header>
+
+<div class="menu">
+
+<label for="tabInicio">
+Inicio
+</label>
+
+<label for="tabProgramacion">
+Programación
+</label>
+
+<label for="tabConfiguracion">
+Configuración
+</label>
+
+</div>
+
+<div class="contenido">
+
+<!-- INICIO -->
+
+<div class="panel inicio">
+
+<h2>Estado General</h2>
+
+<div class="card">
+
+<p><b>Sistema:</b> Activo</p>
+<p><b>WiFi:</b> Conectado</p>
+<p><b>Dirección IP:</b> 192.168.1.100</p>
+<p><b>Sensores:</b> OK</p>
+<p><b>Actuadores:</b> OK</p>
+
+</div>
+
+</div>
+
+<!-- PROGRAMACION -->
+
+<div class="panel programacion">
+
+<h2>Programación</h2>
+
+<div class="card">
+
+<h3>Programación Horaria</h3>
+
+<div class="campo">
+<label>Hora de inicio</label>
+<input type="time">
+</div>
+
+<div class="campo">
+<label>Hora de fin</label>
+<input type="time">
+</div>
+
+<div class="campo">
+<label>Modo de operación</label>
+
+<select>
+
+<option>Automático</option>
+<option>Manual</option>
+
+</select>
+
+</div>
+
+<div class="campo">
+<label>Tiempo de ciclo (minutos)</label>
+<input type="text">
+</div>
+
+<div class="botones">
+
+<button>
+Guardar
+</button>
+
+<button>
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- CONFIGURACION -->
+
+<div class="panel configuracion">
+
+<h2>Configuración</h2>
+
+<div class="card">
+
+<h3>Red WiFi</h3>
+
+<div class="campo">
+<label>SSID</label>
+<input type="text">
+</div>
+
+<div class="campo">
+<label>Contraseña</label>
+<input type="password">
+</div>
+
+<div class="botones">
+
+<button>
+Conectar
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Mantenimiento</h3>
+
+<div class="botones">
+
+<button>
+Reiniciar Sistema
+</button>
+
+<button>
+Valores de Fábrica
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<footer>
+
+Empresa Fabricante S.R.L.<br>
+Sistema IoT ESP32<br>
+Firmware 1.0<br>
+© 2026 Todos los derechos reservados.
+
+</footer>
+
+</div>
+
+</body>
+
+</html>
