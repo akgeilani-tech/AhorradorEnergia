@@ -22,12 +22,15 @@ body{
     color:#222;
 }
 
+p {
+    margin-bottom:8px;
+}
 /*==========================
     CONTENEDOR PRINCIPAL
 ==========================*/
 
 .wrapper{
-    max-width:1100px;
+    max-width:1000px;
     margin:auto;
     min-height:100vh;
     display:flex;
@@ -209,7 +212,72 @@ footer{
     padding:15px;
     font-size:12px;
 }
+/*==========================
+    TABLA PROGRAMACION
+==========================*/
+.tablaResponsive{
+    width:100%;
+    overflow-x:auto;
+}
 
+.tablaProgramacion{
+
+    width:100%;
+    min-width:450px;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+.tablaProgramacion th,
+.tablaProgramacion td{
+
+    padding:12px;
+    border-bottom:1px solid #d0d6dc;
+    text-align:center;
+}
+
+.tablaProgramacion th{
+
+    background:#1f3a5f;
+    color:white;
+}
+
+.tablaProgramacion tr:nth-child(even){
+
+    background:#f5f7fa;
+}
+
+/* Ancho de columnas */
+
+.tablaProgramacion th:nth-child(1),
+.tablaProgramacion td:nth-child(1){
+
+    width:12%;
+}
+
+.tablaProgramacion th:nth-child(2),
+.tablaProgramacion td:nth-child(2){
+
+    width:22%;
+}
+
+.tablaProgramacion th:nth-child(3),
+.tablaProgramacion td:nth-child(3){
+
+    width:22%;
+}
+
+.tablaProgramacion th:nth-child(4),
+.tablaProgramacion td:nth-child(4){
+
+    width:30%;
+}
+
+.tablaProgramacion th:nth-child(5),
+.tablaProgramacion td:nth-child(5){
+
+    width:14%;
+}
 /*==========================
        RESPONSIVE
 ==========================*/
@@ -330,26 +398,134 @@ Configuración
 </div>
 
 <div class="campo">
-<label>Modo de operación</label>
+<label>Frecuencia</label>
 
 <select>
 
-<option>Automático</option>
-<option>Manual</option>
+<option>Diariamente</option>
+<option>Lunes a Viernes</option>
+<option>Sábados y Domingos</option>
+<option>Lunes</option>
+<option>Martes</option>
+<option>Miércoles</option>
+<option>Jueves</option>
+<option>Viernes</option>
+<option>Sábado</option>
+<option>Domingo</option>
 
 </select>
 
 </div>
 
-<div class="campo">
-<label>Tiempo de ciclo (minutos)</label>
-<input type="text">
+<div class="botones">
+
+<button>
+Agregar
+</button>
+
+<button>
+Limpiar
+</button>
+
+</div>
+
+</div>
+<!-- HISTORIAL -->
+
+<div class="card">
+
+<h3>Historial de Programaciones</h3>
+
+<div class="tablaResponsive">
+
+<table class="tablaProgramacion">
+
+<thead>
+
+<tr>
+<th>Activo</th>
+<th>Encendido</th>
+<th>Apagado</th>
+<th>Modo</th>
+<th>Eliminar</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+<input type="checkbox" checked>
+</td>
+
+<td>06:00</td>
+
+<td>08:00</td>
+
+<td>Diario</td>
+
+<td>
+<button class="btnEliminar">
+X
+</button>
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+<input type="checkbox">
+</td>
+
+<td>12:00</td>
+
+<td>13:00</td>
+
+<td>Lu-Vi</td>
+
+<td>
+<button class="btnEliminar">
+X
+</button>
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+<input type="checkbox" checked>
+</td>
+
+<td>18:00</td>
+
+<td>22:00</td>
+
+<td>Diario</td>
+
+<td>
+<button class="btnEliminar">
+X
+</button>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
 </div>
 
 <div class="botones">
 
 <button>
-Guardar
+Guardar Cambios
 </button>
 
 <button>
@@ -357,10 +533,8 @@ Cancelar
 </button>
 
 </div>
-
 </div>
 
-</div>
 
 <!-- CONFIGURACION -->
 
