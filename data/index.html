@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sistema IoT ESP32</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<input type="radio" name="tabs" id="tabInicio" checked>
+<input type="radio" name="tabs" id="tabProgramacion">
+<input type="radio" name="tabs" id="tabConfiguracion">
+
+<header>
+
+<div class="logo">
+LOGO
+</div>
+
+<div class="titulo">
+
+<h1>Sistema de Ahorro de EnergíaIoT ESP32</h1>
+
+<p>Panel de administración del dispositivo</p>
+
+</div>
+
+</header>
+
+<div class="menu">
+
+<label for="tabInicio">
+Inicio
+</label>
+
+<label for="tabProgramacion">
+Programación
+</label>
+
+<label for="tabConfiguracion">
+Configuración
+</label>
+
+</div>
+
+<div class="contenido">
+
+<!-- INICIO -->
+
+<div class="panel inicio">
+
+<h2>Estado General</h2>
+<div class="card">
+
+<h3>Fecha y Hora</h3>
+
+<p>
+    <b>Fecha:</b>
+    <span id="rtcDate">
+        ----/--/--
+    </span>
+</p>
+
+<p>
+    <b>Hora:</b>
+    <span id="rtcTime">
+        --:--:--
+    </span>
+</p>
+
+</div>
+
+<div class="card">
+
+<p>
+<b>Sistema:</b>
+<span id="systemStatus">
+Cargando...
+</span>
+</p>
+
+<p>
+<b>WiFi:</b>
+<span id="wifiStatus">
+Cargando...
+</span>
+</p>
+
+<p>
+<b>Dirección IP:</b>
+<span id="ipAddress">
+0.0.0.0
+</span>
+</p>
+
+<p>
+<b>RTC:</b>
+<span id="rtcStatus">
+Cargando...
+</span>
+</p>
+
+<p>
+<b>Firmware:</b>
+<span id="firmwareVersion">
+1.0
+</span>
+</p>
+
+</div>
+
+</div>
+
+<!-- PROGRAMACION -->
+
+<div class="panel programacion">
+
+<h2>Programación</h2>
+
+<div class="card">
+
+<h3>Programación Horaria</h3>
+
+<div class="campo">
+<label>Hora de inicio</label>
+<input type="time">
+</div>
+
+<div class="campo">
+<label>Hora de fin</label>
+<input type="time">
+</div>
+
+<div class="campo">
+<label>Frecuencia</label>
+
+<select>
+
+<option>Diariamente</option>
+<option>Lunes a Viernes</option>
+<option>Sábados y Domingos</option>
+<option>Lunes</option>
+<option>Martes</option>
+<option>Miércoles</option>
+<option>Jueves</option>
+<option>Viernes</option>
+<option>Sábado</option>
+<option>Domingo</option>
+
+</select>
+
+</div>
+
+<div class="botones">
+
+<button>
+Agregar
+</button>
+
+<button>
+Limpiar
+</button>
+
+</div>
+
+</div>
+<!-- HISTORIAL -->
+
+<div class="card">
+
+<h3>Historial de Programaciones</h3>
+
+<div class="tablaResponsive">
+
+<table class="tablaProgramacion">
+
+<thead>
+
+<tr>
+<th>Activo</th>
+<th>Encendido</th>
+<th>Apagado</th>
+<th>Modo</th>
+<th>Eliminar</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>
+<input type="checkbox" checked>
+</td>
+
+<td>06:00</td>
+
+<td>08:00</td>
+
+<td>Diario</td>
+
+<td>
+<button class="btnEliminar">
+X
+</button>
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+<input type="checkbox">
+</td>
+
+<td>12:00</td>
+
+<td>13:00</td>
+
+<td>Lu-Vi</td>
+
+<td>
+<button class="btnEliminar">
+X
+</button>
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+<input type="checkbox" checked>
+</td>
+
+<td>18:00</td>
+
+<td>22:00</td>
+
+<td>Diario</td>
+
+<td>
+<button class="btnEliminar">
+X
+</button>
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<div class="botones">
+
+<button>
+Guardar Cambios
+</button>
+
+<button>
+Cancelar
+</button>
+
+</div>
+</div>
+
+
+<!-- CONFIGURACION -->
+
+<div class="panel configuracion">
+
+<h2>Configuración</h2>
+
+<div class="card">
+
+<h3>Estado de Red</h3>
+
+<p>
+    <b>Modo:</b>
+    <span id="networkMode">
+        ---
+    </span>
+</p>
+
+<p>
+    <b>SSID actual:</b>
+    <span id="networkSSID">
+        ---
+    </span>
+</p>
+
+<p>
+    <b>IP:</b>
+    <span id="networkIP">
+        ---
+    </span>
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>Red WiFi</h3>
+
+<div class="campo">
+<label>SSID</label>
+<input
+type="text"
+id="wifiSSID">
+</div>
+
+<div class="campo">
+<label>Contraseña</label>
+<input
+type="password"
+id="wifiPassword">
+</div>
+
+<div class="botones">
+
+<button onclick="saveWifi()">
+Conectar
+</button>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Mantenimiento</h3>
+
+<div class="botones">
+
+<button onclick="restartDevice()">
+Reiniciar Sistema
+</button>
+
+<button onclick="factoryReset()">
+Valores de Fábrica
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<footer>
+
+AKGeilani-tech<br>
+Sistema Ahorro de energía IoT ESP32<br>
+Firmware 1.0<br>
+© 2026 Todos los derechos reservados.
+
+</footer>
+
+</div>
+
+<script src="/app.js"></script>
+
+</body>
+
+</html>

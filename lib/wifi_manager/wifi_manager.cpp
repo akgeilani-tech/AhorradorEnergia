@@ -1,116 +1,350 @@
 #include "wifi_manager.h"
 
-#include <WiFi.h>
-
-#include "config.h"
 #include "settings.h"
-
-extern Settings settings;
 
 WifiManager wifiManager;
 
-void WifiManager::begin()
+#define AP_SSID       "EnergySaver"
+#define AP_PASSWORD   "12345678"
+
+bool WifiManager::begin()
 {
     WiFi.persistent(false);
 
-    WiFi.setAutoReconnect(true);
+    WiFi.setAutoReconnect(false);
 
-    if (isConfigured())
-    {
-        if (!connect())
-        {
-            startAP();
-        }
-    }
-    else
-    {
-        startAP();
-    }
+    WiFi.setSleep(false);
+
+    WiFi.mode(
+        WIFI_AP_STA
+    );
+
+    WiFi.onEvent(
+        wifiEvent
+    );
+
+    state =
+        WIFI_IDLE;
+
+    return true;
 }
 
 void WifiManager::update()
 {
+    switch(state)
+    {
+        case WIFI_IDLE:
+
+            startAP();
+
+            if(isConfigured())
+            {
+                startSTA();
+
+                state =
+                    WIFI_CONNECTING;
+            }
+            else
+            {
+                state =
+                    WIFI_AP_ONLY;
+            }
+
+            break;
+
+        case WIFI_AP_ONLY:
+
+            if(reconnectRequest)
+            {
+                reconnectRequest =
+                    false;
+
+                startSTA();
+
+                state =
+                    WIFI_CONNECTING;
+            }
+
+            break;
+
+        case WIFI_CONNECTING:
+
+            if(gotIpEvent)
+            {
+                gotIpEvent =
+                    false;
+
+                stopAP();
+
+                state =
+                    WIFI_CONNECTED;
+
+                Serial.println(
+                    "WiFi Connected"
+                );
+
+                Serial.print(
+                    "IP: "
+                );
+
+                Serial.println(
+                    WiFi.localIP()
+                );
+
+                break;
+            }
+
+            if
+            (
+                millis()
+                -
+                connectTimer
+                >
+                15000
+            )
+            {
+                stopSTA();
+
+                state =
+                    WIFI_AP_ONLY;
+
+                Serial.println(
+                    "Connection Timeout"
+                );
+            }
+
+            break;
+
+        case WIFI_CONNECTED:
+
+            if(disconnectEvent)
+            {
+                disconnectEvent =
+                    false;
+
+                startAP();
+
+                startSTA();
+
+                state =
+                    WIFI_CONNECTING;
+
+                Serial.println(
+                    "WiFi Lost"
+                );
+            }
+
+            if(reconnectRequest)
+            {
+                reconnectRequest =
+                    false;
+
+                startAP();
+
+                stopSTA();
+
+                startSTA();
+
+                state =
+                    WIFI_CONNECTING;
+            }
+
+            break;
+
+        default:
+
+            break;
+    }
 }
 
-bool WifiManager::isConfigured()
+void WifiManager::wifiEvent(
+    WiFiEvent_t event,
+    WiFiEventInfo_t info
+)
 {
-    return strlen(settings.wifi.ssid) > 0;
+    switch(event)
+    {
+        case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+
+            wifiManager.gotIpEvent =
+                true;
+
+            break;
+
+        case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
+
+            wifiManager.disconnectEvent =
+                true;
+
+            wifiManager.staRunning =
+                false;
+
+            break;
+
+        default:
+
+            break;
+    }
 }
 
-bool WifiManager::connect()
+void WifiManager::startAP()
 {
-    WiFi.disconnect(true, true);
+    if(apRunning)
+    {
+        return;
+    }
 
-    delay(200);
+    Serial.println(
+        "Starting AP"
+    );
 
-    WiFi.mode(WIFI_STA);
+    if
+    (
+        WiFi.softAP(
+            AP_SSID,
+            AP_PASSWORD
+        )
+    )
+    {
+        apRunning =
+            true;
+
+        Serial.print(
+            "AP IP: "
+        );
+
+        Serial.println(
+            WiFi.softAPIP()
+        );
+    }
+}
+
+void WifiManager::stopAP()
+{
+    if(!apRunning)
+    {
+        return;
+    }
+
+    WiFi.softAPdisconnect(
+        true
+    );
+
+    apRunning =
+        false;
+
+    Serial.println(
+        "AP OFF"
+    );
+}
+
+void WifiManager::startSTA()
+{
+    if(staRunning)
+    {
+        return;
+    }
+
+    if(!isConfigured())
+    {
+        return;
+    }
+
+    staRunning =
+        true;
+
+    connectTimer =
+        millis();
+
+    Serial.println(
+        "Connecting STA"
+    );
 
     WiFi.begin(
         settings.wifi.ssid,
         settings.wifi.password
     );
-
-    uint32_t start =
-        millis();
-
-    while
-    (
-        WiFi.status() != WL_CONNECTED
-        &&
-        millis() - start < 15000
-    )
-    {
-        delay(250);
-
-        Serial.print(".");
-    }
-
-    Serial.println();
-
-    if (
-        WiFi.status()
-        ==
-        WL_CONNECTED
-    )
-    {
-        Serial.println(
-            "WiFi connected"
-        );
-
-        Serial.println(
-            WiFi.localIP()
-        );
-
-        return true;
-    }
-
-    Serial.println(
-        "WiFi failed"
-    );
-
-    return false;
 }
 
-void WifiManager::startAP()
+void WifiManager::stopSTA()
 {
-    WiFi.disconnect(true, true);
-
-    delay(500);
-
-    WiFi.mode(WIFI_AP);
-
-    WiFi.softAP(
-        AP_SSID,
-        AP_PASSWORD
+    WiFi.disconnect(
+        false,
+        false
     );
+
+    staRunning =
+        false;
+
+    gotIpEvent =
+        false;
+
+    disconnectEvent =
+        false;
+}
+
+void WifiManager::requestReconnect()
+{
+    reconnectRequest =
+        true;
+}
+
+bool WifiManager::isConfigured()
+{
+    return
+        strlen(
+            settings.wifi.ssid
+        )
+        >
+        0;
 }
 
 bool WifiManager::isConnected()
 {
-    return WiFi.status() == WL_CONNECTED;
+    return
+        state
+        ==
+        WIFI_CONNECTED;
 }
 
 bool WifiManager::hasInternet()
 {
-    return false;
+    return
+        isConnected();
+}
+
+WifiState WifiManager::getState()
+{
+    return
+        state;
+}
+
+String WifiManager::getCurrentMode()
+{
+    if(isConnected())
+    {
+        return "STA";
+    }
+
+    return "AP";
+}
+
+String WifiManager::getCurrentSSID()
+{
+    if(isConnected())
+    {
+        return WiFi.SSID();
+    }
+
+    return AP_SSID;
+}
+
+String WifiManager::getCurrentIP()
+{
+    if(isConnected())
+    {
+        return WiFi.localIP().toString();
+    }
+
+    return WiFi.softAPIP().toString();
 }
