@@ -40,6 +40,10 @@ private:
     void handleFactoryReset();
 
     void handleNotFound();
+
+    void handleRTCSet();
+
+    void handleRTCSync();
 };
 
 extern WebServerManager webServerManager;

@@ -11,5 +11,11 @@ Settings settings =
 
     {
         "energy-saver"
+    },
+
+    {
+    "pool.ntp.org",
+    -240,
+    true
     }
 };

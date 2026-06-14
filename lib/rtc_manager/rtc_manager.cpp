@@ -30,3 +30,45 @@ uint32_t RTCManager::getUnixTime()
 {
     return rtc.now().unixtime();
 }
+
+void RTCManager::setLastSync(uint32_t timestamp)
+{
+    lastSync =
+        timestamp;
+}
+
+uint32_t RTCManager::getLastSync()
+{
+    return
+        lastSync;
+}
+
+bool RTCManager::setDateTime(DateTime dt)
+{
+    rtc.adjust(
+        dt
+    );
+    if (rtc.lostPower()) {
+            // Si sigue marcando pérdida de energía tras el adjust, la escritura falló
+            return false;
+        }
+    DateTime check = rtc.now();
+    if (check.year() < 2020) { 
+        // Si devuelve un año absurdo (como el año 2000 por defecto del chip)
+        // o falló la lectura I2C, retornamos false
+        return false;
+    }
+
+    return true;
+}
+
+bool RTCManager::isValid()
+{
+    DateTime now =
+        rtc.now();
+
+    return
+        now.year()
+        >=
+        2024;
+}

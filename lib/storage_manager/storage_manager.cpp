@@ -46,6 +46,19 @@ bool StorageManager::createDefault()
         "energy-saver"
     );
 
+    strcpy(
+        settings.rtc.ntpServer,
+        "pool.ntp.org"
+    );
+
+    settings.rtc.utcOffsetMinutes =
+        -240;
+
+    settings.rtc.autoSync =
+        true;
+
+    settings.rtc.lastSync =
+        0;
     return save();
 }
 
@@ -174,6 +187,12 @@ void StorageManager::reset()
 
     LittleFS.remove(
         CONFIG_FILE
+    );
+
+    memset(
+        &settings,
+        0,
+        sizeof(settings)
     );
 
     createDefault();

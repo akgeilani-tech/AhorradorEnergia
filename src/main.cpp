@@ -20,6 +20,8 @@ void setup()
 
     wifiManager.begin();
 
+    ntpManager.begin();
+
     webServerManager.begin();
 }
 
@@ -28,6 +30,8 @@ void loop()
     wifiManager.update();
 
     rtcManager.update();
+
+    ntpManager.update();
 
     webServerManager.update();
 

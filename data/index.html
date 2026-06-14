@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Sistema IoT ESP32</title>
+<title>Sistema de Ahorro de Energía IoT ESP32</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -28,7 +28,7 @@ LOGO
 
 <div class="titulo">
 
-<h1>Sistema de Ahorro de EnergíaIoT ESP32</h1>
+<h1>Sistema de Ahorro de Energía IoT ESP32</h1>
 
 <p>Panel de administración del dispositivo</p>
 
@@ -309,6 +309,140 @@ Cancelar
         ---
     </span>
 </p>
+
+</div>
+
+<div class="card">
+
+<h3>Configuración RTC</h3>
+
+<div class="campo">
+<label>Fecha</label>
+<input
+    type="date"
+    id="rtcDateInput">
+</div>
+
+<div class="campo">
+<label>Hora</label>
+<input
+    type="time"
+    step="1"
+    id="rtcTimeInput">
+</div>
+
+<div class="campo">
+
+<label>
+
+Zona Horaria
+
+</label>
+
+<select id="timezone">
+
+<option value="-720">
+UTC-12:00
+</option>
+
+<option value="-660">
+UTC-11:00
+</option>
+
+<option value="-600">
+UTC-10:00
+</option>
+
+<option value="-300">
+UTC-05:00
+</option>
+
+<option value="-240">
+UTC-04:00 Bolivia
+</option>
+
+<option value="-180">
+UTC-03:00
+</option>
+
+<option value="0">
+UTC
+</option>
+
+<option value="60">
+UTC+01:00
+</option>
+
+<option value="120">
+UTC+02:00
+</option>
+
+<option value="330">
+UTC+05:30 India
+</option>
+
+<option value="480">
+UTC+08:00
+</option>
+
+<option value="540">
+UTC+09:00 Japón
+</option>
+
+<option value="600">
+UTC+10:00
+</option>
+
+<option value="720">
+UTC+12:00
+</option>
+
+</select>
+
+</div>
+
+<div class="botones">
+
+<button
+    onclick="saveRTC()">
+
+Guardar Fecha y Hora
+
+</button>
+
+</div>
+<p> </p>
+<div class="campo">
+<label>Servidor NTP</label>
+
+<input
+    type="text"
+    id="ntpServer"
+    value="pool.ntp.org">
+<p>
+    Última sincronización:
+    <span id="lastSync">
+    Nunca
+    </span>
+</p> 
+
+</div>
+<!-- <p><input
+    type="checkbox"
+    id="autoSync"> <span id="autoSyncLabel">Sincronización Automática</span>
+</p> -->
+
+<div class="botones">
+
+<button
+    onclick="syncRTC()">
+
+Sincronizar Ahora
+
+</button>
+
+</div>
+
 
 </div>
 

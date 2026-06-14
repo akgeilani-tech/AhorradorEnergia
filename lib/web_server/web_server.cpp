@@ -8,6 +8,7 @@
 #include "storage_manager.h"
 #include "wifi_manager.h"
 #include "rtc_manager.h"
+#include "ntp_manager.h"
 
 WebServerManager webServerManager;
 
@@ -108,6 +109,24 @@ void WebServerManager::setupRoutes()
         [this]()
         {
             handleRTC();
+        }
+    );
+
+    server.on(
+        "/api/rtc",
+        HTTP_POST,
+        [this]()
+        {
+            handleRTCSet();
+        }
+    );
+
+    server.on(
+        "/api/rtc/sync",
+        HTTP_POST,
+        [this]()
+        {
+            handleRTCSync();
         }
     );
 
@@ -247,6 +266,13 @@ void WebServerManager::handleStatus()
     doc["firmware"] =
         "1.0";
 
+    doc["rtc"] =
+    rtcManager.isValid()
+    ?
+    "OK"
+    :
+    "Sin sincronizar";    
+
     String json;
 
     serializeJson(
@@ -316,6 +342,18 @@ void WebServerManager::handleRTC()
     doc["unix"] =
         now.unixtime();
 
+    doc["ntpServer"] =
+        settings.rtc.ntpServer;
+
+    doc["utcOffset"] =
+        settings.rtc.utcOffsetMinutes;
+
+    doc["autoSync"] =
+        settings.rtc.autoSync;
+
+    doc["lastSync"] =
+        settings.rtc.lastSync;
+
     String json;
 
     serializeJson(
@@ -328,6 +366,113 @@ void WebServerManager::handleRTC()
         "application/json",
         json
     );
+}
+
+void WebServerManager::handleRTCSet()
+{
+    if
+    (
+        !server.hasArg(
+            "plain"
+        )
+    )
+    {
+        server.send(
+            400,
+            "text/plain",
+            "Invalid Request"
+        );
+
+        return;
+    }
+
+    JsonDocument doc;
+
+    if
+    (
+        deserializeJson(
+            doc,
+            server.arg(
+                "plain"
+            )
+        )
+    )
+    {
+        server.send(
+            400,
+            "text/plain",
+            "JSON Error"
+        );
+
+        return;
+    }
+
+    DateTime dt
+    (
+        doc["year"],
+        doc["month"],
+        doc["day"],
+        doc["hour"],
+        doc["minute"],
+        doc["second"]
+    );
+
+    rtcManager.setDateTime(
+        dt
+    );
+
+    String ntp =
+        doc["ntpServer"]
+        |
+        "pool.ntp.org";
+
+    ntp.toCharArray(
+        settings.rtc.ntpServer,
+        sizeof(
+            settings.rtc.ntpServer
+        )
+    );
+
+    settings.rtc.utcOffsetMinutes =
+        doc["utcOffset"]
+        |
+        -240;
+
+    settings.rtc.autoSync =
+        doc["autoSync"]
+        |
+        true;
+
+    storageManager.save();
+
+    server.send(
+        200,
+        "text/plain",
+        "RTC Saved"
+    );
+}
+
+void WebServerManager::handleRTCSync()
+{
+    if
+    (
+        ntpManager.syncRTC()
+    )
+    {
+        server.send(
+            200,
+            "text/plain",
+            "NTP Sync OK"
+        );
+    }
+    else
+    {
+        server.send(
+            500,
+            "text/plain",
+            "NTP Sync Error"
+        );
+    }
 }
 
 void WebServerManager::handleWifi()
@@ -412,7 +557,7 @@ void WebServerManager::handleRestart()
         "Restarting..."
     );
 
-    delay(500);
+    delay(1000);
 
     ESP.restart();
 }
@@ -427,7 +572,7 @@ void WebServerManager::handleFactoryReset()
         "Factory Reset"
     );
 
-    delay(500);
+    delay(1000);
 
     ESP.restart();
 }
