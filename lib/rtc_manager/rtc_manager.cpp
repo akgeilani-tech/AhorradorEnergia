@@ -31,18 +31,6 @@ uint32_t RTCManager::getUnixTime()
     return rtc.now().unixtime();
 }
 
-void RTCManager::setLastSync(uint32_t timestamp)
-{
-    lastSync =
-        timestamp;
-}
-
-uint32_t RTCManager::getLastSync()
-{
-    return
-        lastSync;
-}
-
 bool RTCManager::setDateTime(DateTime dt)
 {
     rtc.adjust(

@@ -19,16 +19,6 @@ public:
         DateTime dt
     );
 
-    uint32_t getLastSync();
-
-    void setLastSync(
-        uint32_t value
-    );
-
-private:
-
-    uint32_t lastSync = 0;
-
 };
 
 extern RTCManager rtcManager;

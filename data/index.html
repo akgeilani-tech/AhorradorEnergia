@@ -103,6 +103,13 @@ Cargando...
 </p>
 
 <p>
+<b>Hostname:</b>
+<span id="hostnameStatus">
+---
+</span>
+</p>
+
+<p>
 <b>RTC:</b>
 <span id="rtcStatus">
 Cargando...
@@ -418,7 +425,7 @@ Guardar Fecha y Hora
 <input
     type="text"
     id="ntpServer"
-    value="pool.ntp.org">
+    placeholder="Dirección del servidor NTP (ej. pool.ntp.org)">
 <p>
     Última sincronización:
     <span id="lastSync">
@@ -427,10 +434,12 @@ Guardar Fecha y Hora
 </p> 
 
 </div>
-<!-- <p><input
-    type="checkbox"
-    id="autoSync"> <span id="autoSyncLabel">Sincronización Automática</span>
-</p> -->
+
+<label for="autoSync">Sincronización Automática:</label>
+<select id="autoSync" name="autoSync">
+  <option value="true">Activada</option>
+  <option value="false">Desactivada</option>
+</select>
 
 <div class="botones">
 
@@ -454,14 +463,24 @@ Sincronizar Ahora
 <label>SSID</label>
 <input
 type="text"
-id="wifiSSID">
+id="wifiSSID"
+placeholder="Nombre de la red WiFi">
 </div>
 
 <div class="campo">
 <label>Contraseña</label>
 <input
 type="password"
-id="wifiPassword">
+id="wifiPassword"
+placeholder="Contraseña de la red WiFi">
+</div>
+
+<div class="campo">
+<label>Hostname</label>
+<input
+    type="text"
+    id="hostname"
+    placeholder="Nombre de host">
 </div>
 
 <div class="botones">

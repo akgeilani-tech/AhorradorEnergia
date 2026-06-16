@@ -11,7 +11,7 @@
 
     "system":
     {
-        "hostname":"energy-saver"
+        "hostname":""
     },
 
     "heater":

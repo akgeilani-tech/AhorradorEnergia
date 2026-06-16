@@ -35,6 +35,8 @@ private:
 
     void handleWifi();
 
+    void handleWifiGet();
+
     void handleRestart();
 
     void handleFactoryReset();

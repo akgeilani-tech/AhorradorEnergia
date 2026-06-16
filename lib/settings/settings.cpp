@@ -1,5 +1,5 @@
 #include "settings.h"
-
+#include "config.h"
 Settings settings =
 {
     1,
@@ -10,12 +10,12 @@ Settings settings =
     },
 
     {
-        "energy-saver"
+        HOSTNAME
     },
 
     {
-    "pool.ntp.org",
-    -240,
+    NTP_SERVER,
+    TIMEZONE_OFFSET,
     true
     }
 };

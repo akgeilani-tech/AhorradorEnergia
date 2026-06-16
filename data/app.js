@@ -3,6 +3,10 @@ window.onload = function()
     loadStatus();
 
     loadRTC();
+    
+    loadSavedWifi();
+
+    // loadNTPServer();
 };
 
 function loadStatus()
@@ -30,7 +34,12 @@ function loadStatus()
                 "ipAddress"
             ).innerHTML =
             data.ip;
-
+            
+            document.getElementById(
+                "hostnameStatus"
+            ).innerHTML =
+            data.hostname;
+            
             document.getElementById(
                 "rtcStatus"
             ).innerHTML =
@@ -106,8 +115,12 @@ async function loadRTC()
 
         document.getElementById(
             "autoSync"
-        ).checked =
-            rtc.autoSync;
+        ).value =
+            rtc.autoSync
+            ?
+            "true"
+            :
+            "false";
 
         if
         (
@@ -144,52 +157,30 @@ async function loadRTC()
     }
 }
 
-function saveWifi()
+function loadSavedWifi()
 {
-    const ssid =
-        document.getElementById(
-            "wifiSSID"
-        ).value;
-
-    const password =
-        document.getElementById(
-            "wifiPassword"
-        ).value;
-
     fetch(
-        "/api/wifi",
-        {
-            method:"POST",
-
-            headers:
-            {
-                "Content-Type":
-                "application/json"
-            },
-
-            body:
-            JSON.stringify(
-            {
-                ssid:ssid,
-                password:password
-            })
-        }
+        "/api/wifi"
     )
-
-    .then(
-        response => response.text()
-    )
-
-    .then(
-        data =>
-        {
-            document.getElementById(
-                "messageBox"
-            ).innerHTML =
-            data;
-        }
-    );
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("wifiSSID").value = data.ssid;
+        document.getElementById("hostname").value = data.hostname;
+    });
 }
+
+// function loadNTPServer()
+// {
+//     fetch(
+//         "/api/rtc"
+//     )
+//     .then(response => response.json())
+//     .then(data => {
+//         document.getElementById("ntpServer").value = data.ntpServer;
+//         document.getElementById("lastSync").value = data.lastSync;
+//         document.getElementById("autoSync").value = data.autoSync;
+//     });
+// }
 
 async function restartDevice()
 {
@@ -244,6 +235,11 @@ function factoryReset()
                 method:"POST"
             }
         );
+        //restartDevice();
+        alert(
+            "Se restablecerá la configuración y el sistema se reiniciará, vuelva a conectarse a la red WiFi del dispositivo para configurar la conexión a internet."
+        );
+
     }
 }
 
@@ -252,17 +248,99 @@ function saveWifi()
     const ssid =
         document.getElementById(
             "wifiSSID"
-        ).value;
+        ).value.trim();
 
     const password =
         document.getElementById(
             "wifiPassword"
         ).value;
 
+    const hostname =
+        document.getElementById(
+            "hostname"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+    if
+    (
+        ssid.length
+        ==
+        0
+    )
+    {
+        alert(
+            "El SSID es obligatorio."
+        );
+
+        return;
+    }
+
+    if
+    (
+        password.length
+        ==
+        0
+    )
+    {
+        alert(
+            "La contraseña es obligatoria."
+        );
+
+        return;
+    }
+
+    if
+    (
+        hostname.length
+        ==
+        0
+    )
+    {
+        alert(
+            "El hostname es obligatorio."
+        );
+
+        return;
+    }
+
+    if
+    (
+        hostname.length
+        >
+        31
+    )
+    {
+        alert(
+            "El hostname no puede tener más de 31 caracteres."
+        );
+
+        return;
+    }
+
+    const hostnameRegex =
+    /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,29}[a-zA-Z0-9])?$/;
+
+    if
+    (
+        !hostnameRegex.test(
+            hostname
+        )
+    )
+    {
+        alert(
+            "El hostname sólo puede contener letras, números y guiones (-)."
+        );
+
+        return;
+    }
+
     fetch(
         "/api/wifi",
         {
-            method: "POST",
+            method:
+                "POST",
 
             headers:
             {
@@ -270,22 +348,32 @@ function saveWifi()
                 "application/json"
             },
 
-            body: JSON.stringify(
-            {
-                ssid: ssid,
-                password: password
-            })
+            body:
+                JSON.stringify(
+                {
+                    ssid:
+                        ssid,
+
+                    password:
+                        password,
+
+                    hostname:
+                        hostname
+                })
         }
     )
 
     .then(
-        response => response.text()
+        response =>
+        response.text()
     )
 
     .then(
         text =>
         {
-            alert(text);
+            alert(
+                text
+            );
         }
     );
 }
@@ -316,6 +404,10 @@ async function updateNetworkStatus()
             "networkIP"
         ).textContent =
             data.ip;
+        document.getElementById(
+            "hostnameStatus"
+        ).textContent =
+            data.hostname;
     }
     catch(e)
     {
@@ -402,7 +494,9 @@ async function saveRTC()
                 .getElementById(
                     "autoSync"
                 )
-                .checked
+                .value
+                ===
+                "true"
         };
 
         const response =

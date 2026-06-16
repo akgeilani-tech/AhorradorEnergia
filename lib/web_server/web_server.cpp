@@ -1,10 +1,11 @@
-#include "web_server.h"
 
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
 
+#include "web_server.h"
 #include "settings.h"
+#include "config.h"
 #include "storage_manager.h"
 #include "wifi_manager.h"
 #include "rtc_manager.h"
@@ -127,6 +128,15 @@ void WebServerManager::setupRoutes()
         [this]()
         {
             handleRTCSync();
+        }
+    );
+
+    server.on(
+        "/api/wifi",
+        HTTP_GET,
+        [this]()
+        {
+            handleWifiGet();
         }
     );
 
@@ -263,6 +273,9 @@ void WebServerManager::handleStatus()
     doc["ip"] =
         wifiManager.getCurrentIP();
 
+    doc["hostname"] =
+        settings.system.hostname;    
+
     doc["firmware"] =
         "1.0";
 
@@ -299,6 +312,9 @@ void WebServerManager::handleNetworkStatus()
 
     doc["ip"] =
         wifiManager.getCurrentIP();
+
+    doc["hostname"] =
+        settings.system.hostname;
 
     String json;
 
@@ -424,7 +440,7 @@ void WebServerManager::handleRTCSet()
     String ntp =
         doc["ntpServer"]
         |
-        "pool.ntp.org";
+        NTP_SERVER;
 
     ntp.toCharArray(
         settings.rtc.ntpServer,
@@ -441,7 +457,7 @@ void WebServerManager::handleRTCSet()
     settings.rtc.autoSync =
         doc["autoSync"]
         |
-        true;
+        false;
 
     storageManager.save();
 
@@ -524,6 +540,18 @@ void WebServerManager::handleWifi()
         |
         "";
 
+    String hostname =
+        doc["hostname"]
+        |
+        "";
+
+    hostname.toCharArray(
+        settings.system.hostname,
+        sizeof(
+            settings.system.hostname
+        )
+    );
+
     ssid.toCharArray(
         settings.wifi.ssid,
         sizeof(
@@ -546,6 +574,39 @@ void WebServerManager::handleWifi()
         200,
         "text/plain",
         "Configuration Saved"
+    );
+}
+
+void WebServerManager::handleWifiGet()
+{
+    JsonDocument doc;
+
+    doc["ssid"] =
+        settings.wifi.ssid;
+
+    doc["hostname"] =
+        settings.system.hostname;
+
+    doc["connected"] =
+        wifiManager.isConnected();
+
+    doc["currentSSID"] =
+        wifiManager.getCurrentSSID();
+
+    doc["ip"] =
+        wifiManager.getCurrentIP();
+
+    String json;
+
+    serializeJson(
+        doc,
+        json
+    );
+
+    server.send(
+        200,
+        "application/json",
+        json
     );
 }
 

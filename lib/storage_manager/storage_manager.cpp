@@ -43,22 +43,23 @@ bool StorageManager::createDefault()
 
     strcpy(
         settings.system.hostname,
-        "energy-saver"
+        HOSTNAME
     );
 
     strcpy(
         settings.rtc.ntpServer,
-        "pool.ntp.org"
+        NTP_SERVER
     );
 
     settings.rtc.utcOffsetMinutes =
-        -240;
+        0;
 
     settings.rtc.autoSync =
         true;
 
     settings.rtc.lastSync =
-        0;
+        false;
+        
     return save();
 }
 
@@ -101,6 +102,20 @@ bool StorageManager::load()
         return createDefault();
     }
 
+    if
+    (
+        settings.version
+        !=
+        SETTINGS_VERSION
+    )
+    {
+        Serial.println(
+            "Configuration version mismatch"
+        );
+
+        createDefault();
+    }
+
     settings.version =
         doc["version"] |
         SETTINGS_VERSION;
@@ -122,9 +137,20 @@ bool StorageManager::load()
     strlcpy(
         settings.system.hostname,
         doc["system"]["hostname"] |
-        "energy-saver",
+        HOSTNAME,
         sizeof(settings.system.hostname)
     );
+
+    strlcpy(
+        settings.rtc.ntpServer,
+        doc["rtc"]["ntpServer"] |
+        NTP_SERVER,
+        sizeof(settings.rtc.ntpServer)
+    );
+    
+    settings.rtc.autoSync =
+        doc["rtc"]["autoSync"] |
+        false;
 
     Serial.println("Configuration loaded");
 
@@ -159,6 +185,12 @@ bool StorageManager::save()
 
     doc["system"]["hostname"] =
         settings.system.hostname;
+
+    doc["rtc"]["ntpServer"] =
+        settings.rtc.ntpServer;
+
+    doc["rtc"]["autoSync"] =
+        settings.rtc.autoSync;    
 
     if (
         serializeJson(

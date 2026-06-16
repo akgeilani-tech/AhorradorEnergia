@@ -51,22 +51,11 @@ void NTPManager::update()
         return;
     }
 
-    if
-    (
-        settings.rtc.lastSync
-        ==
-        0
-    )
-    {
-        syncRTC();
-
-        return;
-    }
-    
     lastCheck =
         millis();
 
     syncRTC();
+    return;
 }
 
 bool NTPManager::syncRTC()
@@ -76,9 +65,9 @@ bool NTPManager::syncRTC()
         !wifiManager.isConnected()
     )
     {
-        Serial.println(
-            "NTP: WiFi not connected"
-        );
+        // Serial.println(
+        //     "NTP: WiFi not connected"
+        // );
 
         return false;
     }
@@ -144,13 +133,12 @@ bool NTPManager::syncRTC()
         return false;
     }
 
-    rtcManager.setLastSync(
-        epoch
-    );
-
     settings.rtc.lastSync =
         epoch;
-
+    
+    settings.rtc.autoSync =
+        settings.rtc.autoSync;
+    
     storageManager.save();
 
     Serial.println(

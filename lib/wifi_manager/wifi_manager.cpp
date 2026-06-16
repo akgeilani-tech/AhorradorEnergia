@@ -1,11 +1,10 @@
+#include <ESPmDNS.h>
 #include "wifi_manager.h"
-
+#include "config.h"
 #include "settings.h"
+#include "ntp_manager.h"
 
 WifiManager wifiManager;
-
-#define AP_SSID       "EnergySaver"
-#define AP_PASSWORD   "12345678"
 
 bool WifiManager::begin()
 {
@@ -78,6 +77,8 @@ void WifiManager::update()
 
                 state =
                     WIFI_CONNECTED;
+                
+                ntpManager.syncRTC();
 
                 Serial.println(
                     "WiFi Connected"
@@ -91,6 +92,40 @@ void WifiManager::update()
                     WiFi.localIP()
                 );
 
+                if
+                (
+                    !MDNS.begin(
+                        settings.system.hostname
+                    )
+                )
+                {
+                    Serial.println(
+                        "mDNS Error"
+                    );
+                    Serial.print(
+                        settings.system.hostname
+                    );
+                }
+                else
+                {
+                    MDNS.addService(
+                        "http",
+                        "tcp",
+                        80
+                    );
+                    Serial.print(
+                        "mDNS: http://"
+                    );
+
+                    Serial.print(
+                        settings.system.hostname
+                    );
+
+                    Serial.println(
+                        ".local"
+                    );
+                }
+            
                 break;
             }
 
@@ -100,7 +135,7 @@ void WifiManager::update()
                 -
                 connectTimer
                 >
-                15000
+                WIFI_CONNECT_TIMEOUT
             )
             {
                 stopSTA();
@@ -122,13 +157,15 @@ void WifiManager::update()
                 disconnectEvent =
                     false;
 
+                MDNS.end();
+
                 startAP();
 
                 startSTA();
 
                 state =
                     WIFI_CONNECTING;
-
+                
                 Serial.println(
                     "WiFi Lost"
                 );
@@ -259,6 +296,12 @@ void WifiManager::startSTA()
     Serial.println(
         "Connecting STA"
     );
+    
+    WiFi.setHostname(
+        settings.system.hostname
+    );
+
+    Serial.println(WiFi.getHostname());
 
     WiFi.begin(
         settings.wifi.ssid,

@@ -8,8 +8,12 @@
 
 #define HOSTNAME "energy-saver"
 
+#define TIMEZONE_OFFSET -240
+#define NTP_SERVER "pool.ntp.org"
+
+
 #define CONFIG_FILE "/config.json"
 #define SETTINGS_MAGIC 1
-#define SETTINGS_VERSION 1
+#define SETTINGS_VERSION 1.2
 
-#define WIFI_CONNECT_TIMEOUT 30000
+#define WIFI_CONNECT_TIMEOUT 15000
