@@ -352,8 +352,35 @@ bool WifiManager::isConnected()
 
 bool WifiManager::hasInternet()
 {
-    return
-        isConnected();
+    WiFiClient client;
+
+    Serial.println(
+        "Testing internet..."
+    );
+
+    // Probar DNS/Internet con conexión a 8.8.8.8:80
+
+    bool ok =
+        client.connect(
+            "8.8.8.8",
+            53
+        );
+
+    if (ok) {
+
+        Serial.println(
+            "Internet OK"
+        );
+
+        client.stop();
+
+        return true;
+    }
+
+    Serial.println(
+        "No internet"
+    );
+    return false;
 }
 
 WifiState WifiManager::getState()
