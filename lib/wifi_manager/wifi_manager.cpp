@@ -410,6 +410,7 @@ String WifiManager::getCurrentSSID()
 }
 
 String WifiManager::getCurrentIP()
+
 {
     if(isConnected())
     {
@@ -417,4 +418,14 @@ String WifiManager::getCurrentIP()
     }
 
     return WiFi.softAPIP().toString();
+}
+
+int WifiManager::getCurrentRSSI()
+{
+    if(isConnected())
+    {
+        return WiFi.RSSI();
+    }
+
+    return 0;
 }

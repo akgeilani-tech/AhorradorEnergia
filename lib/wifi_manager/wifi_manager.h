@@ -36,6 +36,8 @@ public:
 
     String getCurrentIP();
 
+    int getCurrentRSSI();
+
     String getCurrentMode();
 
 private:

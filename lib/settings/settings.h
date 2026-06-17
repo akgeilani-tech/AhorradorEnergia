@@ -34,7 +34,7 @@ struct RTCStatus
 
 struct Settings
 {
-    uint16_t version;
+    float version;
 
     WifiSettings wifi;
 

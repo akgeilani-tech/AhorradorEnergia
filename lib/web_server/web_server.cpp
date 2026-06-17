@@ -277,16 +277,23 @@ void WebServerManager::handleStatus()
         settings.system.hostname;    
 
     doc["firmware"] =
-        "1.0";
+        settings.version;
 
     doc["rtc"] =
-    rtcManager.isValid()
-    ?
-    "OK"
-    :
-    "Sin sincronizar";    
+        rtcManager.isValid()
+        ?
+        "OK"
+        :
+        "Sin sincronizar";  
 
-    String json;
+    doc["internet"] =
+        wifiManager.hasInternet()
+        ?
+        "Disponible"
+        :
+        "No disponible";
+
+        String json;
 
     serializeJson(
         doc,
@@ -313,8 +320,8 @@ void WebServerManager::handleNetworkStatus()
     doc["ip"] =
         wifiManager.getCurrentIP();
 
-    doc["hostname"] =
-        settings.system.hostname;
+    doc["rssi"] =
+        wifiManager.getCurrentRSSI();
 
     String json;
 

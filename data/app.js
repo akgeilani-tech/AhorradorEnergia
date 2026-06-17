@@ -44,6 +44,17 @@ function loadStatus()
                 "rtcStatus"
             ).innerHTML =
             data.rtc;
+
+            document.getElementById(
+                "internetStatus"
+            ).innerHTML =
+            data.internet;
+
+            document.getElementById(
+                "firmwareVersion"
+            ).innerHTML =
+            data.firmware;
+
         }
     );
 }
@@ -168,19 +179,6 @@ function loadSavedWifi()
         document.getElementById("hostname").value = data.hostname;
     });
 }
-
-// function loadNTPServer()
-// {
-//     fetch(
-//         "/api/rtc"
-//     )
-//     .then(response => response.json())
-//     .then(data => {
-//         document.getElementById("ntpServer").value = data.ntpServer;
-//         document.getElementById("lastSync").value = data.lastSync;
-//         document.getElementById("autoSync").value = data.autoSync;
-//     });
-// }
 
 async function restartDevice()
 {
@@ -404,11 +402,13 @@ async function updateNetworkStatus()
             "networkIP"
         ).textContent =
             data.ip;
+        
         document.getElementById(
-            "hostnameStatus"
+            "networkRSSI"
         ).textContent =
-            data.hostname;
+            data.rssi;
     }
+
     catch(e)
     {
         console.log(
