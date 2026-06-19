@@ -21,7 +21,7 @@ void RTCManager::update()
 {
 }
 
-DateTime RTCManager::now()
+DateTime RTCManager::getDateTime()
 {
     return rtc.now();
 }
@@ -47,7 +47,10 @@ bool RTCManager::setDateTime(DateTime dt)
         return false;
     }
 
-    return true;
+return fabs(
+    check.unixtime() -
+    dt.unixtime()
+) < 5;
 }
 
 bool RTCManager::isValid()

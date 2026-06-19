@@ -14,8 +14,13 @@ Settings settings =
     },
 
     {
-    NTP_SERVER,
     TIMEZONE_OFFSET,
-    true
+    "GMT Standard Time"
+    },
+
+    {
+    NTP_SERVER,
+    true,
+    0
     }
 };

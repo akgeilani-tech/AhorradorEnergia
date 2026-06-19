@@ -46,18 +46,24 @@ bool StorageManager::createDefault()
         HOSTNAME
     );
 
-    strcpy(
-        settings.rtc.ntpServer,
-        NTP_SERVER
-    );
-
     settings.rtc.utcOffsetMinutes =
         0;
 
-    settings.rtc.autoSync =
+    strlcpy(
+        settings.rtc.timezoneName,
+        "GMT Standard Time",
+        sizeof(settings.rtc.timezoneName)
+    );
+
+    strcpy(
+        settings.ntp.server,
+        NTP_SERVER
+    );
+
+    settings.ntp.autoSync =
         true;
 
-    settings.rtc.lastSync =
+    settings.ntp.lastSync =
         false;
         
     return save();
@@ -65,6 +71,7 @@ bool StorageManager::createDefault()
 
 bool StorageManager::load()
 {
+    // VErificar si el archivo existe, si no crear uno por defecto
     if (!LittleFS.exists(CONFIG_FILE))
     {
         Serial.println("Configuration file not found");
@@ -77,14 +84,14 @@ bool StorageManager::load()
             CONFIG_FILE,
             "r"
         );
-
+    // Verificar si se pudo abrir el archivo
     if (!file)
     {
         Serial.println("Cannot open configuration file");
 
         return false;
     }
-
+    // Deserializar el JSON
     JsonDocument doc;
 
     DeserializationError error =
@@ -94,7 +101,8 @@ bool StorageManager::load()
         );
 
     file.close();
-
+        
+    // Verificar si hubo error al deserializar
     if (error)
     {
         Serial.println("Invalid JSON");
@@ -102,9 +110,13 @@ bool StorageManager::load()
         return createDefault();
     }
 
+    float fileVersion =
+        doc["version"] |
+        0;
+
     if
     (
-        settings.version
+        fileVersion
         !=
         SETTINGS_VERSION
     )
@@ -113,7 +125,7 @@ bool StorageManager::load()
             "Configuration version mismatch"
         );
 
-        createDefault();
+        return createDefault();
     }
 
     settings.version =
@@ -141,15 +153,30 @@ bool StorageManager::load()
         sizeof(settings.system.hostname)
     );
 
+    settings.rtc.utcOffsetMinutes =
+        doc["rtc"]["utcOffsetMinutes"] |
+        0;
+
     strlcpy(
-        settings.rtc.ntpServer,
-        doc["rtc"]["ntpServer"] |
-        NTP_SERVER,
-        sizeof(settings.rtc.ntpServer)
+        settings.rtc.timezoneName,
+        doc["rtc"]["timezoneName"] |
+        "GMT Standard Time",
+        sizeof(settings.rtc.timezoneName)
     );
-    
-    settings.rtc.autoSync =
-        doc["rtc"]["autoSync"] |
+
+    strlcpy(
+        settings.ntp.server,
+        doc["ntp"]["server"] |
+        NTP_SERVER,
+        sizeof(settings.ntp.server)
+    );
+
+    settings.ntp.lastSync =
+        doc["ntp"]["lastSync"] |
+        false;
+
+    settings.ntp.autoSync =
+        doc["ntp"]["autoSync"] |
         false;
 
     Serial.println("Configuration loaded");
@@ -186,11 +213,20 @@ bool StorageManager::save()
     doc["system"]["hostname"] =
         settings.system.hostname;
 
-    doc["rtc"]["ntpServer"] =
-        settings.rtc.ntpServer;
+    doc["rtc"]["utcOffsetMinutes"] =
+        settings.rtc.utcOffsetMinutes;
 
-    doc["rtc"]["autoSync"] =
-        settings.rtc.autoSync;    
+    doc["rtc"]["timezoneName"] =
+        settings.rtc.timezoneName;
+
+    doc["ntp"]["server"] =
+        settings.ntp.server;
+
+    doc["ntp"]["lastSync"] =
+        settings.ntp.lastSync;
+
+    doc["ntp"]["autoSync"] =
+        settings.ntp.autoSync;
 
     if (
         serializeJson(

@@ -3,14 +3,23 @@ window.onload = function()
     loadStatus();
 
     loadRTC();
-    
+
     loadSavedWifi();
 
-    // loadNTPServer();
+    updateRTC();
+
+    updateNetworkStatus();
 };
 
 function loadStatus()
 {
+    // if(!response.ok)
+    // {
+    //     throw new Error(
+    //         "HTTP " + response.status
+    //     );
+    // }
+    
     fetch("/api/status")
 
     .then(
@@ -119,20 +128,6 @@ async function loadRTC()
         ).value =
             rtc.ntpServer;
 
-        document.getElementById(
-            "timezone"
-        ).value =
-            rtc.utcOffset;
-
-        document.getElementById(
-            "autoSync"
-        ).value =
-            rtc.autoSync
-            ?
-            "true"
-            :
-            "false";
-
         if
         (
             rtc.lastSync
@@ -140,17 +135,32 @@ async function loadRTC()
             0
         )
         {
-            const d =
-                new Date(
-                    rtc.lastSync
-                    *
-                    1000
-                );
+        const d =
+            new Date(
+                (
+                    rtc.lastSync * 1000
+                ) 
+            );
 
             document.getElementById(
                 "lastSync"
             ).textContent =
-                d.toLocaleString();
+                d.toISOString();
+            
+            document.getElementById(
+                "timezone"
+            ).value =
+                rtc.utcOffset;
+
+            document.getElementById(
+                "autoSync"
+            ).value =
+                rtc.autoSync
+                ?
+                "true"
+                :
+                "false";
+
         }
         else
         {
@@ -163,7 +173,7 @@ async function loadRTC()
     catch(error)
     {
         console.log(
-            error
+            error.message
         );
     }
 }
@@ -219,7 +229,7 @@ async function restartDevice()
     }
 }
 
-function factoryReset()
+async function factoryReset()
 {
     if(
         confirm(
@@ -227,16 +237,21 @@ function factoryReset()
         )
     )
     {
-        fetch(
+        const response =
+        await fetch(
             "/api/factoryreset",
             {
                 method:"POST"
             }
         );
-        //restartDevice();
-        alert(
+        
+        if(response.ok)
+        {
+            alert(
             "Se restablecerá la configuración y el sistema se reiniciará, vuelva a conectarse a la red WiFi del dispositivo para configurar la conexión a internet."
-        );
+            );
+            restartDevice();
+        }
 
     }
 }
@@ -419,6 +434,7 @@ async function updateNetworkStatus()
 
 async function saveRTC()
 {
+    // Guardar la fecha,hora y UTC offset en el RTC
     try
     {
         const date =
@@ -470,15 +486,8 @@ async function saveRTC()
 
             second:
                 parseInt(
-                    time[2]
+                    time[2] || 0
                 ),
-
-            ntpServer:
-                document
-                .getElementById(
-                    "ntpServer"
-                )
-                .value,
 
             utcOffset:
                 parseInt(
@@ -488,15 +497,6 @@ async function saveRTC()
                     )
                     .value
                 ),
-
-            autoSync:
-                document
-                .getElementById(
-                    "autoSync"
-                )
-                .value
-                ===
-                "true"
         };
 
         const response =
@@ -535,15 +535,42 @@ async function saveRTC()
     }
 }
 
-async function syncRTC()
+async function syncNTP()
 {
     try
     {
+        const data =
+        {
+            utcOffset:
+                parseInt(
+                    document
+                    .getElementById(
+                        "timezone"
+                    )
+                    .value
+                ),
+            autoSync: 
+                document
+                .getElementById(
+                        "autoSync"
+                    )
+                    .value ===
+                    "true"
+        };
         const response =
             await fetch(
                 "/api/rtc/sync",
                 {
-                    method:"POST"
+                    method:"POST",
+                    headers:
+                    {
+                        "Content-Type":
+                        "application/json"
+                    },
+                    body:
+                        JSON.stringify(
+                            data
+                        )
                 }
             );
 
@@ -560,7 +587,7 @@ async function syncRTC()
     catch(error)
     {
         alert(
-            "Error de comunicación"
+            error.message
         );
     }
 }
@@ -611,7 +638,7 @@ async function updateRTC()
 
 setInterval(
     updateNetworkStatus,
-    3000
+    5000
 );
 
 setInterval(

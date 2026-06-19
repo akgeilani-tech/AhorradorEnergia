@@ -353,6 +353,17 @@ Cancelar
     id="rtcTimeInput">
 </div>
 
+<div class="botones">
+
+<button
+    onclick="saveRTC()">
+
+Guardar Fecha y Hora
+
+</button>
+
+</div>
+<hr>
 <div class="campo">
 
 <label>
@@ -423,16 +434,6 @@ UTC+12:00
 
 </div>
 
-<div class="botones">
-
-<button
-    onclick="saveRTC()">
-
-Guardar Fecha y Hora
-
-</button>
-
-</div>
 <p> </p>
 <div class="campo">
 <label>Servidor NTP</label>
@@ -441,25 +442,27 @@ Guardar Fecha y Hora
     type="text"
     id="ntpServer"
     placeholder="Dirección del servidor NTP (ej. pool.ntp.org)">
-<p>
+</div>
+
+<div class="campo">
     Última sincronización:
     <span id="lastSync">
     Nunca
     </span>
-</p> 
-
 </div>
 
-<label for="autoSync">Sincronización Automática:</label>
-<select id="autoSync" name="autoSync">
-  <option value="true">Activada</option>
-  <option value="false">Desactivada</option>
-</select>
+<div class="campo">
+    <label for="autoSync">Sincronización Automática:</label>
+    <select id="autoSync" name="autoSync">
+    <option value="true">Activada</option>
+    <option value="false">Desactivada</option>
+    </select>
+</div>
 
 <div class="botones">
 
 <button
-    onclick="syncRTC()">
+    onclick="syncNTP()">
 
 Sincronizar Ahora
 

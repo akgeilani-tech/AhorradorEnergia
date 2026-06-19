@@ -14,22 +14,18 @@ struct SystemSettings
 
 struct RTCSettings
 {
-    char ntpServer[64];
-
     int16_t utcOffsetMinutes;
 
     char timezoneName[32];
+};
 
+struct NTPSettings
+{
+    char server[64];
+    
     bool autoSync;
 
     uint32_t lastSync;
-};
-
-struct RTCStatus
-{
-    uint32_t lastSync;
-
-    bool synced;
 };
 
 struct Settings
@@ -41,6 +37,8 @@ struct Settings
     SystemSettings system;
 
     RTCSettings rtc;
+
+    NTPSettings ntp;
 };
 
 extern Settings settings;

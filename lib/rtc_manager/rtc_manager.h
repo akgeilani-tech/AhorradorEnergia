@@ -9,7 +9,7 @@ public:
 
     void update();
 
-    DateTime now();
+    DateTime getDateTime();
 
     uint32_t getUnixTime();
 

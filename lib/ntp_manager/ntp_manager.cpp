@@ -4,6 +4,7 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 
+#include "config.h"
 #include "settings.h"
 #include "rtc_manager.h"
 #include "storage_manager.h"
@@ -25,7 +26,7 @@ void NTPManager::update()
 {
     if
     (
-        !settings.rtc.autoSync
+        !settings.ntp.autoSync
     )
     {
         return;
@@ -65,10 +66,14 @@ bool NTPManager::syncRTC()
         !wifiManager.isConnected()
     )
     {
-        // Serial.println(
-        //     "NTP: WiFi not connected"
-        // );
+        return false;
+    }
 
+    if
+    (
+        !wifiManager.hasInternet()
+    )
+    {
         return false;
     }
 
@@ -79,7 +84,7 @@ bool NTPManager::syncRTC()
     NTPClient ntpClient
     (
         ntpUDP,
-        settings.rtc.ntpServer,
+        settings.ntp.server,
         0,
         60000
     );
@@ -89,10 +94,7 @@ bool NTPManager::syncRTC()
     bool ok =
         ntpClient.forceUpdate();
 
-    if
-    (
-        !ok
-    )
+    if(!ok)
     {
         Serial.println(
             "NTP: Update failed"
@@ -103,20 +105,32 @@ bool NTPManager::syncRTC()
         return false;
     }
 
-    unsigned long epoch =
+    unsigned long utcEpoch =
         ntpClient.getEpochTime();
 
     ntpClient.end();
 
-    epoch +=
+    if
+    (
+        utcEpoch < 100000
+    )
+    {
+        Serial.println(
+            "NTP: Invalid epoch"
+        );
+
+        return false;
+    }
+
+    unsigned long localEpoch =
+        utcEpoch +
         (
             settings.rtc.utcOffsetMinutes
-            *
-            60
+            * 60
         );
 
     DateTime dt(
-        epoch
+        localEpoch
     );
 
     if
@@ -133,12 +147,9 @@ bool NTPManager::syncRTC()
         return false;
     }
 
-    settings.rtc.lastSync =
-        epoch;
-    
-    settings.rtc.autoSync =
-        settings.rtc.autoSync;
-    
+    settings.ntp.lastSync =
+        localEpoch; //utcEpoch;
+
     storageManager.save();
 
     Serial.println(
@@ -146,19 +157,27 @@ bool NTPManager::syncRTC()
     );
 
     Serial.print(
-        "NTP Server: "
+        "UTC Epoch: "
     );
 
     Serial.println(
-        settings.rtc.ntpServer
+        utcEpoch
     );
 
     Serial.print(
-        "Epoch: "
+        "Local Epoch: "
     );
 
     Serial.println(
-        epoch
+        localEpoch
+    );
+
+    Serial.print(
+        "UTC Offset: "
+    );
+
+    Serial.println(
+        settings.rtc.utcOffsetMinutes
     );
 
     Serial.print(
@@ -169,41 +188,31 @@ bool NTPManager::syncRTC()
         dt.year()
     );
 
-    Serial.print(
-        "-"
-    );
+    Serial.print("-");
 
     Serial.print(
         dt.month()
     );
 
-    Serial.print(
-        "-"
-    );
+    Serial.print("-");
 
     Serial.print(
         dt.day()
     );
 
-    Serial.print(
-        " "
-    );
+    Serial.print(" ");
 
     Serial.print(
         dt.hour()
     );
 
-    Serial.print(
-        ":"
-    );
+    Serial.print(":");
 
     Serial.print(
         dt.minute()
     );
 
-    Serial.print(
-        ":"
-    );
+    Serial.print(":");
 
     Serial.println(
         dt.second()

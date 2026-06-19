@@ -293,7 +293,7 @@ void WebServerManager::handleStatus()
         :
         "No disponible";
 
-        String json;
+    String json;
 
     serializeJson(
         doc,
@@ -340,7 +340,7 @@ void WebServerManager::handleNetworkStatus()
 void WebServerManager::handleRTC()
 {
     DateTime now =
-        rtcManager.now();
+        rtcManager.getDateTime();
 
     JsonDocument doc;
 
@@ -365,17 +365,17 @@ void WebServerManager::handleRTC()
     doc["unix"] =
         now.unixtime();
 
-    doc["ntpServer"] =
-        settings.rtc.ntpServer;
-
     doc["utcOffset"] =
         settings.rtc.utcOffsetMinutes;
 
+    doc["ntpServer"] =
+        settings.ntp.server;
+
     doc["autoSync"] =
-        settings.rtc.autoSync;
+        settings.ntp.autoSync;
 
     doc["lastSync"] =
-        settings.rtc.lastSync;
+        settings.ntp.lastSync;
 
     String json;
 
@@ -450,21 +450,21 @@ void WebServerManager::handleRTCSet()
         NTP_SERVER;
 
     ntp.toCharArray(
-        settings.rtc.ntpServer,
+        settings.ntp.server,
         sizeof(
-            settings.rtc.ntpServer
+            settings.ntp.server
         )
     );
 
     settings.rtc.utcOffsetMinutes =
         doc["utcOffset"]
         |
-        -240;
+        TIMEZONE_OFFSET;
 
-    settings.rtc.autoSync =
+    settings.ntp.autoSync =
         doc["autoSync"]
         |
-        false;
+        true;
 
     storageManager.save();
 
@@ -477,11 +477,46 @@ void WebServerManager::handleRTCSet()
 
 void WebServerManager::handleRTCSync()
 {
-    if
-    (
-        ntpManager.syncRTC()
-    )
+    if(server.hasArg("plain"))
     {
+        JsonDocument doc;
+
+        if(!deserializeJson(
+            doc,
+            server.arg("plain")
+        ))
+        {
+            settings.rtc.utcOffsetMinutes =
+                doc["utcOffset"]
+                |
+                TIMEZONE_OFFSET;
+
+            settings.ntp.autoSync =
+                doc["autoSync"]
+                |
+                true;
+
+            String ntp =
+                doc["ntpServer"]
+                |
+                NTP_SERVER;
+
+            ntp.toCharArray(
+                settings.ntp.server,
+                sizeof(settings.ntp.server)
+            );
+
+            storageManager.save();
+        }
+    }
+
+    bool ok =
+        ntpManager.syncRTC();
+
+    if(ok)
+    {
+        storageManager.save();
+
         server.send(
             200,
             "text/plain",
@@ -493,7 +528,7 @@ void WebServerManager::handleRTCSync()
         server.send(
             500,
             "text/plain",
-            "NTP Sync Error"
+            "NTP Sync Error - Not connected to WiFi or NTP server not reachable"
         );
     }
 }
