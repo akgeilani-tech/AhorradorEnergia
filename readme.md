@@ -1,18 +1,19 @@
 # ESP32-IoT-Core
 
-Framework base para proyectos IoT basados en ESP32, diseñado para proporcionar una infraestructura sólida, reutilizable y desacoplada de la lógica de negocio.
+Framework base para proyectos IoT basados en ESP32.
 
-El objetivo es evitar reimplementar en cada proyecto los mismos componentes fundamentales:
+Este proyecto proporciona una infraestructura reutilizable para dispositivos IoT que requieren:
 
-- WiFi AP/STA
-- RTC
-- NTP
-- Almacenamiento persistente
-- Servidor Web
-- API REST
-- Gestión de configuración
-- Sincronización horaria
-- Interfaz Web
+* Configuración WiFi desde navegador
+* Almacenamiento persistente
+* RTC DS3231
+* Sincronización NTP
+* Servidor Web integrado
+* API REST
+* Interfaz Web responsive
+* Descubrimiento mediante mDNS
+
+El objetivo es reutilizar esta base en futuros proyectos sin volver a implementar la infraestructura principal.
 
 ---
 
@@ -20,161 +21,62 @@ El objetivo es evitar reimplementar en cada proyecto los mismos componentes fund
 
 ### Conectividad
 
-- Modo STA (cliente WiFi)
-- Modo AP (portal de configuración)
-- Reconexión automática
-- Verificación de acceso a Internet
-- Estado de conexión centralizado
+* Modo AP (Access Point)
+* Modo STA (Station)
+* AP de respaldo automático
+* Reconexión automática
+* Verificación de acceso a Internet
+* mDNS (`hostname.local`)
 
 ### Gestión de Tiempo
 
-- RTC DS3231
-- Sincronización NTP manual
-- Sincronización NTP automática
-- Soporte UTC Offset
-- Fuente única de tiempo para toda la aplicación
+* RTC DS3231
+* Sincronización NTP manual
+* Sincronización NTP automática
+* UTC Offset configurable
+* Persistencia de configuración horaria
 
-### Persistencia
+### Almacenamiento
 
-- LittleFS
-- Configuración persistente
-- Restauración automática al arranque
-- Valores por defecto configurables
+* LittleFS
+* Configuración persistente en JSON
+* Restauración de fábrica
+* Versionado de configuración
 
 ### Web
 
-- Servidor HTTP integrado
-- API REST JSON
-- Interfaz Web responsive
-- Configuración desde navegador
-
-### Arquitectura
-
-- Modular
-- Orientada a objetos
-- Bajo acoplamiento
-- Reutilizable en múltiples proyectos
+* Servidor HTTP embebido
+* API REST JSON
+* Configuración desde navegador
+* Interfaz Web responsive
 
 ---
 
-## Arquitectura General
+## Arquitectura
 
 ```text
-                    Internet
-                        │
-                        ▼
-                  NTP Server
-                        │
-                        ▼
-                  NTPManager
-                        │
-                Aplica UTC Offset
-                        │
-                        ▼
-                    RTC DS3231
-                        │
-                        ▼
-                  RTCManager
-                        │
-                        ▼
-                 Fuente Oficial
-                    de Tiempo
-                        │
-        ┌───────────────┼───────────────┐
-        ▼               ▼               ▼
-   Scheduler      Web Server      Aplicación
+                 Internet
+                     │
+                     ▼
+                NTP Server
+                     │
+                     ▼
+                NTPManager
+                     │
+                     ▼
+                RTC DS3231
+                     │
+                     ▼
+                RTCManager
+                     │
+                     ▼
+              Fuente Oficial
+                 de Tiempo
+                     │
+      ┌──────────────┼──────────────┐
+      ▼              ▼              ▼
+ Web Server      Scheduler      Aplicación
 ```
-
----
-
-## Principios de Diseño
-
-### Regla 1
-
-El RTC almacena siempre hora local.
-
-Ejemplo:
-
-UTC obtenido desde NTP:
-
-```text
-18:00
-```
-
-UTC Offset:
-
-```text
--4 horas
-```
-
-Hora almacenada en RTC:
-
-```text
-14:00
-```
-
----
-
-### Regla 2
-
-NTP solamente sincroniza el RTC.
-
-Ningún otro módulo debe consultar directamente servidores NTP.
-
----
-
-### Regla 3
-
-RTCManager es la única fuente oficial de tiempo.
-
-Uso permitido:
-
-```cpp
-DateTime now =
-    rtcManager.now();
-```
-
-Uso no permitido:
-
-```cpp
-time(nullptr);
-
-NTPClient.getEpochTime();
-
-configTime(...);
-```
-
----
-
-### Regla 4
-
-Todo el sistema debe trabajar con la hora obtenida desde RTCManager.
-
-Ejemplos:
-
-- Scheduler
-- Historial
-- Relés
-- Automatización
-- Interfaz Web
-
----
-
-### Regla 5
-
-El UTC Offset se aplica una sola vez.
-
-```text
-NTP UTC
-    │
-    ▼
-Aplicar Offset
-    │
-    ▼
-RTC
-```
-
-Nunca volver a aplicar el offset posteriormente.
 
 ---
 
@@ -183,161 +85,418 @@ Nunca volver a aplicar el offset posteriormente.
 ```text
 src/
 │
-├── core/
-│   ├── rtc_manager.*
-│   ├── ntp_manager.*
-│   ├── wifi_manager.*
-│   ├── storage_manager.*
-│   └── web_server_manager.*
+├── main.cpp
+│
+lib/
 │
 ├── config/
+│   └── config.h
+│
+├── settings/
 │   ├── settings.h
-│   └── defaults.h
+│   └── settings.cpp
 │
-├── app/
-│   └── application.cpp
+├── storage_manager/
+│   ├── storage_manager.h
+│   └── storage_manager.cpp
 │
-└── main.cpp
+├── wifi_manager/
+│   ├── wifi_manager.h
+│   └── wifi_manager.cpp
+│
+├── rtc_manager/
+│   ├── rtc_manager.h
+│   └── rtc_manager.cpp
+│
+├── ntp_manager/
+│   ├── ntp_manager.h
+│   └── ntp_manager.cpp
+│
+└── web_server/
+    ├── web_server.h
+    └── web_server.cpp
+
+data/
+│
+├── index.html
+├── style.css
+└── app.js
 ```
 
 ---
 
-## Componentes
+## Dependencias
 
-### RTCManager
+### PlatformIO
 
-Responsable de:
+```ini
+lib_deps =
+    adafruit/RTClib
+    bblanchon/ArduinoJson
+    arduino-libraries/NTPClient
+```
 
-- Inicializar RTC
-- Leer fecha y hora
-- Escribir fecha y hora
-- Validar RTC
+### Framework
 
-Funciones principales:
+```ini
+framework = arduino
+```
+
+### Filesystem
+
+```ini
+board_build.filesystem = littlefs
+```
+
+---
+
+## Flujo de Arranque
+
+```text
+ESP32 Boot
+    │
+    ▼
+LittleFS.begin()
+    │
+    ▼
+StorageManager.load()
+    │
+    ▼
+RTCManager.begin()
+    │
+    ▼
+WifiManager.begin()
+    │
+    ▼
+NTPManager.begin()
+    │
+    ▼
+WebServerManager.begin()
+```
+
+---
+
+## Módulos Disponibles
+
+## StorageManager
+
+Responsable de la persistencia de configuración.
+
+### Funciones
+
+```cpp
+storageManager.begin();
+```
+
+Inicializa LittleFS.
+
+```cpp
+storageManager.load();
+```
+
+Carga configuración desde archivo JSON.
+
+```cpp
+storageManager.save();
+```
+
+Guarda configuración actual.
+
+```cpp
+storageManager.createDefault();
+```
+
+Genera configuración por defecto.
+
+```cpp
+storageManager.reset();
+```
+
+Restaura configuración de fábrica.
+
+```cpp
+storageManager.print();
+```
+
+Muestra configuración por consola.
+
+---
+
+## RTCManager
+
+Responsable de la comunicación con DS3231.
+
+### Funciones
 
 ```cpp
 rtcManager.begin();
+```
 
-rtcManager.now();
+Inicializa RTC.
 
-rtcManager.setDateTime(dt);
+```cpp
+rtcManager.getDateTime();
+```
+
+Obtiene fecha y hora actual.
+
+Retorna:
+
+```cpp
+DateTime
 ```
 
 ---
 
-### NTPManager
+```cpp
+rtcManager.getUnixTime();
+```
 
-Responsable de:
+Obtiene timestamp Unix.
 
-- Sincronización NTP
-- Aplicación de UTC Offset
-- Actualización del RTC
+Retorna:
 
-Funciones principales:
+```cpp
+uint32_t
+```
+
+---
+
+```cpp
+rtcManager.setDateTime(dt);
+```
+
+Establece fecha y hora.
+
+Retorna:
+
+```cpp
+bool
+```
+
+---
+
+```cpp
+rtcManager.isValid();
+```
+
+Verifica que el RTC contenga una fecha válida.
+
+Retorna:
+
+```cpp
+bool
+```
+
+---
+
+## WifiManager
+
+Responsable de toda la conectividad WiFi.
+
+### Funciones
+
+```cpp
+wifiManager.begin();
+```
+
+Inicialización.
+
+---
+
+```cpp
+wifiManager.update();
+```
+
+Máquina de estados WiFi.
+
+---
+
+```cpp
+wifiManager.requestReconnect();
+```
+
+Solicita reconexión.
+
+---
+
+```cpp
+wifiManager.isConfigured();
+```
+
+Verifica si existe configuración WiFi.
+
+---
+
+```cpp
+wifiManager.isConnected();
+```
+
+Indica conexión STA activa.
+
+---
+
+```cpp
+wifiManager.hasInternet();
+```
+
+Verifica acceso a Internet.
+
+---
+
+```cpp
+wifiManager.getState();
+```
+
+Obtiene estado actual.
+
+---
+
+```cpp
+wifiManager.getCurrentSSID();
+```
+
+SSID activo.
+
+---
+
+```cpp
+wifiManager.getCurrentIP();
+```
+
+IP actual.
+
+---
+
+```cpp
+wifiManager.getCurrentRSSI();
+```
+
+Potencia de señal.
+
+---
+
+```cpp
+wifiManager.getCurrentMode();
+```
+
+Retorna:
+
+```text
+AP
+```
+
+o
+
+```text
+STA
+```
+
+---
+
+## NTPManager
+
+Responsable de la sincronización horaria.
+
+### Funciones
+
+```cpp
+ntpManager.begin();
+```
+
+Inicialización.
+
+---
+
+```cpp
+ntpManager.update();
+```
+
+Sincronización automática.
+
+---
 
 ```cpp
 ntpManager.syncRTC();
 ```
 
----
+Sincronización inmediata con servidor NTP.
 
-### WiFiManager
-
-Responsable de:
-
-- Conexión STA
-- Modo AP
-- Detección de Internet
-- Estado de red
-
-Funciones principales:
+Retorna:
 
 ```cpp
-wifiManager.begin();
-
-wifiManager.isConnected();
-
-wifiManager.hasInternet();
+bool
 ```
 
 ---
 
-### StorageManager
+## WebServerManager
 
-Responsable de:
+Servidor HTTP integrado.
 
-- Guardar configuración
-- Cargar configuración
-- Valores por defecto
-
-Funciones principales:
-
-```cpp
-storageManager.load();
-
-storageManager.save();
-
-storageManager.reset();
-```
-
----
-
-### WebServerManager
-
-Responsable de:
-
-- API REST
-- Servidor Web
-- Configuración remota
-
-Funciones principales:
+### Funciones
 
 ```cpp
 webServerManager.begin();
-
-webServerManager.handleClient();
 ```
+
+Inicializa servidor.
 
 ---
 
-## Configuración Persistente
+```cpp
+webServerManager.update();
+```
 
-### Estructuras de Configuración
+Procesa peticiones HTTP.
 
-#### RTCSettings
+---
+
+## Estructuras de Configuración
+
+### WifiSettings
 
 ```cpp
-struct RTCSettings
+struct WifiSettings
 {
-    int utcOffsetMinutes;
+    char ssid[32];
+    char password[64];
 };
 ```
 
 ---
 
-#### NTPSettings
+### SystemSettings
+
+```cpp
+struct SystemSettings
+{
+    char hostname[32];
+};
+```
+
+---
+
+### RTCSettings
+
+```cpp
+struct RTCSettings
+{
+    int16_t utcOffsetMinutes;
+    char timezoneName[32];
+};
+```
+
+---
+
+### NTPSettings
 
 ```cpp
 struct NTPSettings
 {
     char server[64];
-
     bool autoSync;
-
     uint32_t lastSync;
-};
-```
-
----
-
-### WiFiSettings
-
-```cpp
-struct WiFiSettings
-{
-    char ssid[32];
-
-    char password[64];
 };
 ```
 
@@ -345,15 +504,21 @@ struct WiFiSettings
 
 ## API REST
 
-### Obtener Estado RTC
-
-#### GET
+### Estado del Sistema
 
 ```http
-/api/rtc
+GET /api/status
 ```
 
-Respuesta:
+---
+
+### Estado RTC
+
+```http
+GET /api/rtc
+```
+
+Devuelve:
 
 ```json
 {
@@ -375,138 +540,112 @@ Respuesta:
 
 ### Guardar Configuración RTC
 
-#### POST /api/rtc
-
 ```http
-/api/rtc
-```
-
-Body:
-
-```json
-{
-  "year": 2026,
-  "month": 6,
-  "day": 18,
-  "hour": 23,
-  "minute": 30,
-  "second": 0,
-  "utcOffset": -180,
-  "ntpServer": "pool.ntp.org",
-  "autoSync": true
-}
+POST /api/rtc
 ```
 
 ---
 
 ### Sincronizar RTC
 
-#### POST /api/rtc/sync
+```http
+POST /api/rtc/sync
+```
+
+---
+
+### Obtener Configuración WiFi
 
 ```http
-/api/rtc/sync
-```
-
-Body:
-
-```json
-{
-  "utcOffset": -180,
-  "ntpServer": "pool.ntp.org",
-  "autoSync": true
-}
-```
-
-Respuesta:
-
-```text
-NTP Sync OK
+GET /api/wifi
 ```
 
 ---
 
-## Flujo de Arranque
+### Guardar Configuración WiFi
 
-```text
-Boot
- │
- ▼
-LittleFS.begin()
- │
- ▼
-StorageManager.load()
- │
- ▼
-RTCManager.begin()
- │
- ▼
-WiFiManager.begin()
- │
- ▼
-WebServerManager.begin()
- │
- ▼
-Sistema Operativo
+```http
+POST /api/wifi
 ```
 
 ---
 
-## Flujo de Sincronización
+### Reiniciar Dispositivo
+
+```http
+POST /api/restart
+```
+
+---
+
+### Restaurar Fábrica
+
+```http
+POST /api/factory-reset
+```
+
+---
+
+## Máquina de Estados WiFi
+
+Estados implementados:
+
+```cpp
+WIFI_IDLE
+WIFI_AP_ONLY
+WIFI_CONNECTING
+WIFI_CONNECTED
+```
+
+---
+
+## mDNS
+
+Cuando existe conexión STA válida:
 
 ```text
-Usuario
-    │
-    ▼
-/api/rtc/sync
-    │
-    ▼
-Guardar Configuración
-    │
-    ▼
-Consultar NTP
-    │
-    ▼
-Aplicar UTC Offset
-    │
-    ▼
-Actualizar RTC
-    │
-    ▼
-Guardar lastSync
+http://hostname.local
+```
+
+Ejemplo:
+
+```text
+http://ahorrador.local
 ```
 
 ---
 
 ## Casos de Uso
 
-Este framework puede utilizarse como base para:
+Este núcleo puede utilizarse como base para:
 
-- Calentadores de agua
-- Acuarios
-- Sistemas de riego
-- Automatización residencial
-- Control de iluminación
-- Bombas de agua
-- Piscinas
-- Tanques de almacenamiento
-- Monitoreo ambiental
-- Sistemas de energía solar
+* Automatización residencial
+* Control de iluminación
+* Sistemas de riego
+* Acuarios
+* Calentadores de agua
+* Bombas de agua
+* Piscinas
+* Monitoreo ambiental
+* Energía solar
+* Control de tanques
+* Temporizadores programables
 
 ---
 
-## Recomendaciones
+## Buenas Prácticas
 
-### Fuente de tiempo
+### Tiempo
 
 Utilizar siempre:
 
 ```cpp
-rtcManager.now();
+rtcManager.getDateTime();
 ```
 
----
+como fuente oficial de tiempo.
 
-### Almacenamiento
+### Persistencia
 
 Después de modificar configuraciones:
 
@@ -514,46 +653,45 @@ Después de modificar configuraciones:
 storageManager.save();
 ```
 
----
+### NTP
 
-### Sincronización
+Utilizar exclusivamente:
 
-No utilizar NTP directamente fuera de NTPManager.
-
----
-
-### Escalabilidad
-
-Mantener la lógica específica de cada proyecto fuera de:
-
-- RTCManager
-- NTPManager
-- WiFiManager
-- StorageManager
-- WebServerManager
-
-Estos módulos deben permanecer genéricos y reutilizables.
-
----
-
-## Estado Actual
-
-Versión:
-
-```text
-v1.0.0
+```cpp
+ntpManager.syncRTC();
 ```
 
-Incluye:
+para sincronización.
 
-- RTC DS3231
-- NTP
-- UTC Offset
-- WiFi AP/STA
-- LittleFS
-- Servidor Web
-- API REST
-- Configuración Persistente
-- Interfaz Web Responsive
+### WiFi
 
-Base estable para futuros proyectos IoT.
+No acceder directamente a la clase WiFi desde la lógica de negocio.
+
+Utilizar:
+
+```cpp
+wifiManager
+```
+
+como capa de abstracción.
+
+---
+
+## Roadmap
+
+### Próximas mejoras
+
+* Scheduler genérico
+* MQTT
+* OTA Update
+* HTTPS
+* Logs persistentes
+* Sistema de eventos
+* Soporte para múltiples relés
+* Integración Home Assistant
+
+---
+
+## Licencia
+
+MIT License
