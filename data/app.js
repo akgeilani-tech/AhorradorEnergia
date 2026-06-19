@@ -138,14 +138,14 @@ async function loadRTC()
         const d =
             new Date(
                 (
-                    rtc.lastSync * 1000
+                    (rtc.lastSync - rtc.utcOffset * 60) * 1000
                 ) 
             );
 
             document.getElementById(
                 "lastSync"
             ).textContent =
-                d.toISOString();
+                d.toLocaleString();
             
             document.getElementById(
                 "timezone"
